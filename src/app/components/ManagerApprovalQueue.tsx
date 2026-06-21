@@ -90,22 +90,22 @@ export function ManagerApprovalQueue({
   };
 
   return (
-    <div className="h-full flex gap-6 p-8">
-      <div className="flex-1 bg-card border border-border rounded-xl overflow-hidden flex flex-col">
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center justify-between mb-4">
+    <div className="h-full flex flex-col lg:flex-row gap-6 p-4 sm:p-8 overflow-y-auto lg:overflow-hidden min-w-0">
+      <div className="flex-1 bg-card border border-border rounded-xl lg:overflow-hidden flex flex-col min-w-0">
+        <div className="p-4 sm:p-6 border-b border-border">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div>
               <h2 className="text-foreground mb-1">Approval Queue</h2>
               <p className="text-[14px] text-muted-foreground">
                 {filteredSubmissions.length} submissions awaiting review
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {['All', 'Pending', 'Reviewing', 'Flagged'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilterStatus(status)}
-                  className={`px-3 h-8 rounded text-[14px] transition-colors ${
+                  className={`px-3 h-8 rounded text-[14px] transition-colors flex-shrink-0 ${
                     filterStatus === status
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -118,8 +118,8 @@ export function ManagerApprovalQueue({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          <table className="w-full">
+        <div className="lg:flex-1 lg:overflow-y-auto">
+          <table className="hidden md:table w-full">
             <thead className="bg-muted sticky top-0">
               <tr>
                 <th className="text-left px-6 py-3 text-[12px] text-muted-foreground">
@@ -183,6 +183,38 @@ export function ManagerApprovalQueue({
             </tbody>
           </table>
 
+          <div className="md:hidden divide-y divide-border">
+            {filteredSubmissions.map((resource) => (
+              <div
+                key={resource.id}
+                onClick={() => setSelectedResource(resource)}
+                className={`p-4 cursor-pointer transition-colors ${
+                  selectedResource?.id === resource.id ? 'bg-accent' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="text-foreground">{resource.title}</div>
+                  {getStatusBadge(resource.auditStatus)}
+                </div>
+                <div className="text-[12px] text-muted-foreground mb-2">
+                  {resource.discipline} • {resource.resourceType}
+                </div>
+                <div className="text-[14px] text-muted-foreground mb-3">
+                  {resource.contributorName || 'Unknown'} · {resource.dateSubmitted || 'N/A'}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedResource(resource);
+                  }}
+                  className="px-3 h-8 rounded text-[14px] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  Review
+                </button>
+              </div>
+            ))}
+          </div>
+
           {filteredSubmissions.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16">
               <CheckCircle2 className="w-12 h-12 text-muted-foreground mb-3" />
@@ -195,7 +227,7 @@ export function ManagerApprovalQueue({
       </div>
 
       {selectedResource && (
-        <div className="w-[400px] bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+        <div className="w-full lg:w-[400px] bg-card border border-border rounded-xl overflow-hidden flex flex-col flex-shrink-0 min-w-0">
           <div className="p-6 border-b border-border">
             <h3 className="text-foreground mb-2">Review Submission</h3>
             <p className="text-[12px] text-muted-foreground">
@@ -261,9 +293,9 @@ export function ManagerApprovalQueue({
                   href={selectedResource.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[14px] text-primary hover:underline"
+                  className="flex items-start gap-2 text-[14px] text-primary hover:underline break-all"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   {selectedResource.url}
                 </a>
               </div>

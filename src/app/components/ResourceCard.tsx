@@ -81,7 +81,7 @@ export function ResourceCard({ resource, userRole }: ResourceCardProps) {
           {resource.description}
         </p>
 
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
           {resource.tags.slice(0, 2).map((tag, index) => (
             <span
               key={index}

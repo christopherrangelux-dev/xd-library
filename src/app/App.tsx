@@ -7,7 +7,7 @@ import { ProcessVault } from './components/ProcessVault';
 import { ManagerApprovalQueue } from './components/ManagerApprovalQueue';
 import { SubmissionWizard, SubmissionData } from './components/SubmissionWizard';
 import { useResources, Resource, UserRole } from './hooks/useResources';
-import { Users, CheckCircle } from 'lucide-react';
+import { Users, CheckCircle, SlidersHorizontal } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
 const mockResources: Resource[] = [
@@ -214,6 +214,7 @@ export default function App() {
   const [userRole, setUserRole] = useState<UserRole>('Associate');
   const [currentView, setCurrentView] = useState<'library' | 'vault' | 'queue'>('library');
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [resources, setResources] = useState<Resource[]>(mockResources);
 
   const {
@@ -305,9 +306,9 @@ export default function App() {
         isManager={userRole === 'Manager'}
       />
 
-      <div className="flex items-center justify-end px-8 py-3 bg-card border-b border-border">
+      <div className="flex items-center justify-end px-4 sm:px-8 py-3 bg-card border-b border-border">
         <div className="flex items-center gap-3">
-          <span className="text-[14px] text-muted-foreground">View Mode:</span>
+          <span className="hidden sm:inline text-[14px] text-muted-foreground">View Mode:</span>
           <div className="flex gap-1 p-1 bg-muted rounded-lg">
             <button
               onClick={() => setUserRole('Associate')}
@@ -343,21 +344,32 @@ export default function App() {
               onToggleDiscipline={toggleDiscipline}
               onToggleResourceType={toggleResourceType}
               onClearFilters={clearFilters}
+              isOpen={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
             />
 
             <main className="flex-1 overflow-y-auto">
-              <div className="p-8">
+              <div className="p-4 sm:p-8">
                 <div className="mb-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-foreground mb-1">Resource Library</h2>
-                      <p className="text-muted-foreground">
-                        {filteredResources.length}{' '}
-                        {filteredResources.length === 1 ? 'resource' : 'resources'} available
-                      </p>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="lg:hidden h-9 px-3 rounded-lg border border-border hover:bg-secondary transition-colors flex items-center gap-2 flex-shrink-0"
+                      >
+                        <SlidersHorizontal className="w-4 h-4" />
+                        <span className="text-[14px]">Filters</span>
+                      </button>
+                      <div>
+                        <h2 className="text-foreground mb-1">Resource Library</h2>
+                        <p className="text-muted-foreground">
+                          {filteredResources.length}{' '}
+                          {filteredResources.length === 1 ? 'resource' : 'resources'} available
+                        </p>
+                      </div>
                     </div>
                     {userRole === 'Manager' && (
-                      <div className="flex gap-2 text-[12px]">
+                      <div className="flex flex-wrap gap-2 text-[12px]">
                         <div className="flex items-center gap-2 px-3 py-1 bg-accent border border-primary rounded">
                           <div className="w-2 h-2 rounded-full bg-primary" />
                           <span>Verified</span>

@@ -66,9 +66,9 @@ export function ProcessVault() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="h-full flex flex-col lg:flex-row gap-8 p-8">
+    <div className="h-full flex flex-col lg:flex-row gap-8 p-4 sm:p-8">
       <div className="flex-1 bg-card border border-border rounded-xl p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between gap-2 mb-6">
           <div>
             <h2 className="text-foreground mb-1">Taxonomy Explorer</h2>
             <p className="text-[14px] text-muted-foreground">
