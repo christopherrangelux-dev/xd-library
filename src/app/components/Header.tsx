@@ -1,10 +1,10 @@
-import { Search, Library, Inbox, FolderTree, Plus } from 'lucide-react';
+import { Search, Library, Inbox, FolderTree, FileCheck2, Plus } from 'lucide-react';
 
 interface HeaderProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  currentView: 'library' | 'vault' | 'queue';
-  onViewChange: (view: 'library' | 'vault' | 'queue') => void;
+  currentView: 'library' | 'vault' | 'queue' | 'submissions';
+  onViewChange: (view: 'library' | 'vault' | 'queue' | 'submissions') => void;
   onOpenSubmission: () => void;
   isManager: boolean;
 }
@@ -33,6 +33,10 @@ export function Header({
       <button onClick={() => onViewChange('vault')} className={navButtonClass(currentView === 'vault')}>
         <FolderTree className="w-4 h-4" />
         Process Vault
+      </button>
+      <button onClick={() => onViewChange('submissions')} className={navButtonClass(currentView === 'submissions')}>
+        <FileCheck2 className="w-4 h-4" />
+        My Submissions
       </button>
       {isManager && (
         <button onClick={() => onViewChange('queue')} className={navButtonClass(currentView === 'queue')}>

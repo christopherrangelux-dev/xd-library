@@ -5,6 +5,7 @@ import { ResourceGrid } from './components/ResourceGrid';
 import { EmptyState } from './components/EmptyState';
 import { ProcessVault } from './components/ProcessVault';
 import { ManagerApprovalQueue } from './components/ManagerApprovalQueue';
+import { MySubmissions } from './components/MySubmissions';
 import { SubmissionWizard, SubmissionData } from './components/SubmissionWizard';
 import { ResourceDetail } from './components/resource/ResourceDetail';
 import { useResources, Resource, UserRole, AuditTrailEntry } from './hooks/useResources';
@@ -213,12 +214,13 @@ const mockResources: Resource[] = [
 
 export default function App() {
   const [userRole, setUserRole] = useState<UserRole>('Associate');
-  const [currentView, setCurrentView] = useState<'library' | 'vault' | 'queue'>('library');
+  const [currentView, setCurrentView] = useState<'library' | 'vault' | 'queue' | 'submissions'>('library');
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [resources, setResources] = useState<Resource[]>(mockResources);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [lastContributorName, setLastContributorName] = useState<string | null>(null);
 
   const {
     searchTerm,
@@ -252,6 +254,7 @@ export default function App() {
     };
 
     setResources((prev) => [...prev, newResource]);
+    setLastContributorName(data.contributorName);
     toast.success('Resource submitted successfully! Awaiting review.', {
       duration: 4000,
     });
@@ -283,6 +286,7 @@ export default function App() {
         };
       })
     );
+    setLastContributorName(data.contributorName);
     toast.success('Resource resubmitted for review!', {
       duration: 4000,
     });
@@ -341,6 +345,11 @@ export default function App() {
     });
   };
 
+  const handleEditResubmit = (resource: Resource) => {
+    setEditingResource(resource);
+    setIsSubmissionOpen(true);
+  };
+
   return (
     <div className="size-full flex flex-col bg-background">
       <Toaster position="top-right" richColors />
@@ -394,10 +403,7 @@ export default function App() {
             }
             userRole={userRole}
             onBack={() => setSelectedResource(null)}
-            onEditResubmit={(resource) => {
-              setEditingResource(resource);
-              setIsSubmissionOpen(true);
-            }}
+            onEditResubmit={handleEditResubmit}
           />
         )}
 
@@ -479,6 +485,14 @@ export default function App() {
               onReject={handleReject}
             />
           </main>
+        )}
+
+        {currentView === 'submissions' && (
+          <MySubmissions
+            resources={resources}
+            contributorName={lastContributorName}
+            onEditResubmit={handleEditResubmit}
+          />
         )}
       </div>
 
