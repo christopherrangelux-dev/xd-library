@@ -7,7 +7,7 @@ import { ProcessVault } from './components/ProcessVault';
 import { ManagerApprovalQueue } from './components/ManagerApprovalQueue';
 import { SubmissionWizard, SubmissionData } from './components/SubmissionWizard';
 import { ResourceDetail } from './components/resource/ResourceDetail';
-import { useResources, Resource, UserRole } from './hooks/useResources';
+import { useResources, Resource, UserRole, AuditTrailEntry } from './hooks/useResources';
 import { Users, CheckCircle, SlidersHorizontal } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
@@ -218,6 +218,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [resources, setResources] = useState<Resource[]>(mockResources);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [editingResource, setEditingResource] = useState<Resource | null>(null);
 
   const {
     searchTerm,
@@ -252,6 +253,37 @@ export default function App() {
 
     setResources((prev) => [...prev, newResource]);
     toast.success('Resource submitted successfully! Awaiting review.', {
+      duration: 4000,
+    });
+  };
+
+  const handleResubmit = (id: string, data: SubmissionData) => {
+    setResources((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+
+        const resubmissionEntry: AuditTrailEntry = {
+          date: new Date().toISOString(),
+          action: 'Resubmitted',
+          userId: 'current-user',
+          userName: data.contributorName,
+        };
+
+        return {
+          ...r,
+          title: data.title,
+          description: data.description,
+          url: data.url,
+          discipline: data.discipline as any,
+          resourceType: data.resourceType as any,
+          tags: data.tags,
+          contributorName: data.contributorName,
+          auditStatus: 'Pending' as const,
+          auditTrail: [...(r.auditTrail || []), resubmissionEntry],
+        };
+      })
+    );
+    toast.success('Resource resubmitted for review!', {
       duration: 4000,
     });
   };
@@ -349,6 +381,10 @@ export default function App() {
             }
             userRole={userRole}
             onBack={() => setSelectedResource(null)}
+            onEditResubmit={(resource) => {
+              setEditingResource(resource);
+              setIsSubmissionOpen(true);
+            }}
           />
         )}
 
@@ -435,8 +471,39 @@ export default function App() {
 
       <SubmissionWizard
         isOpen={isSubmissionOpen}
-        onClose={() => setIsSubmissionOpen(false)}
-        onSubmit={handleSubmission}
+        onClose={() => {
+          setIsSubmissionOpen(false);
+          setEditingResource(null);
+        }}
+        onSubmit={(data) => {
+          if (editingResource) {
+            handleResubmit(editingResource.id, data);
+          } else {
+            handleSubmission(data);
+          }
+          setEditingResource(null);
+        }}
+        editingResourceId={editingResource?.id}
+        initialData={
+          editingResource
+            ? {
+                title: editingResource.title,
+                description: editingResource.description,
+                url: editingResource.url || '',
+                discipline: editingResource.discipline,
+                resourceType: editingResource.resourceType,
+                tags: editingResource.tags,
+                contributorName: editingResource.contributorName || '',
+              }
+            : undefined
+        }
+        lastReviewComment={
+          editingResource
+            ? [...(editingResource.auditTrail || [])]
+                .reverse()
+                .find((entry) => entry.comments)?.comments
+            : undefined
+        }
       />
     </div>
   );

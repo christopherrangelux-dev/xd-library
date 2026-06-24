@@ -9,6 +9,7 @@ import {
   User,
   Calendar,
   History,
+  Pencil,
 } from 'lucide-react';
 import { Resource, UserRole, AuditStatus } from '../../hooks/useResources';
 import { getCategoryColor } from '../ResourceCard';
@@ -17,6 +18,7 @@ interface ResourceDetailProps {
   resource: Resource;
   userRole: UserRole;
   onBack: () => void;
+  onEditResubmit: (resource: Resource) => void;
 }
 
 const statusBadges: Record<
@@ -69,7 +71,7 @@ function getStatusBadge(status: AuditStatus) {
   );
 }
 
-export function ResourceDetail({ resource, userRole, onBack }: ResourceDetailProps) {
+export function ResourceDetail({ resource, userRole, onBack, onEditResubmit }: ResourceDetailProps) {
   // userRole is accepted now for a future manager-only action; unused for now.
   void userRole;
 
@@ -119,6 +121,15 @@ export function ResourceDetail({ resource, userRole, onBack }: ResourceDetailPro
               </div>
 
               <div className="flex gap-2 flex-shrink-0">
+                {resource.auditStatus === 'Flagged' && (
+                  <button
+                    onClick={() => onEditResubmit(resource)}
+                    className="h-10 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    <span>Edit & Resubmit</span>
+                  </button>
+                )}
                 {resource.downloadUrl && (
                   <a
                     href={resource.downloadUrl}

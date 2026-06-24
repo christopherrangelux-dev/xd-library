@@ -1,11 +1,14 @@
-import { useState } from 'react';
-import { X, ArrowRight, ArrowLeft, CheckCircle2, Upload } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, ArrowRight, ArrowLeft, CheckCircle2, Upload, MessageSquare } from 'lucide-react';
 import { Discipline, ResourceType } from '../hooks/useResources';
 
 interface SubmissionWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: SubmissionData) => void;
+  initialData?: Partial<SubmissionData>;
+  editingResourceId?: string;
+  lastReviewComment?: string;
 }
 
 export interface SubmissionData {
@@ -37,7 +40,15 @@ const suggestedTags = [
   'Writing',
 ];
 
-export function SubmissionWizard({ isOpen, onClose, onSubmit }: SubmissionWizardProps) {
+export function SubmissionWizard({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  editingResourceId,
+  lastReviewComment,
+}: SubmissionWizardProps) {
+  const isEditing = Boolean(editingResourceId);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<SubmissionData>({
     title: '',
@@ -49,6 +60,23 @@ export function SubmissionWizard({ isOpen, onClose, onSubmit }: SubmissionWizard
     contributorName: '',
     contributorEmail: '',
   });
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setFormData({
+        title: '',
+        description: '',
+        url: '',
+        discipline: '',
+        resourceType: '',
+        tags: [],
+        contributorName: '',
+        contributorEmail: '',
+        ...initialData,
+      });
+      setStep(1);
+    }
+  }, [isOpen, initialData]);
 
   const updateField = (field: keyof SubmissionData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -97,7 +125,9 @@ export function SubmissionWizard({ isOpen, onClose, onSubmit }: SubmissionWizard
       <div className="bg-card border border-border rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="p-6 border-b border-border flex items-center justify-between">
           <div>
-            <h2 className="text-foreground mb-1">Submit a Resource</h2>
+            <h2 className="text-foreground mb-1">
+              {isEditing ? 'Edit & Resubmit Resource' : 'Submit a Resource'}
+            </h2>
             <p className="text-[14px] text-muted-foreground">
               Step {step} of 3: {step === 1 ? 'Asset Details' : step === 2 ? 'Taxonomy Tagging' : 'Contributor Info'}
             </p>
@@ -113,6 +143,16 @@ export function SubmissionWizard({ isOpen, onClose, onSubmit }: SubmissionWizard
         <div className="flex-1 overflow-y-auto p-6">
           {step === 1 && (
             <div className="space-y-6">
+              {isEditing && lastReviewComment && (
+                <div className="p-4 bg-accent border border-primary/20 rounded-lg">
+                  <p className="text-[14px] text-foreground flex items-start gap-2">
+                    <MessageSquare className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Manager feedback:</strong> {lastReviewComment}
+                    </span>
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="block text-foreground mb-2">
                   Resource Title *
@@ -235,7 +275,9 @@ export function SubmissionWizard({ isOpen, onClose, onSubmit }: SubmissionWizard
           {step === 3 && (
             <div className="space-y-6">
               <div className="p-6 bg-accent border border-primary/20 rounded-lg">
-                <h3 className="text-foreground mb-2">Review Your Submission</h3>
+                <h3 className="text-foreground mb-2">
+                  {isEditing ? 'Review Your Resubmission' : 'Review Your Submission'}
+                </h3>
                 <div className="space-y-2 text-[14px]">
                   <p>
                     <strong>Title:</strong> {formData.title}
@@ -312,7 +354,7 @@ export function SubmissionWizard({ isOpen, onClose, onSubmit }: SubmissionWizard
               className="h-11 px-6 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
               <Upload className="w-4 h-4" />
-              Submit for Review
+              {isEditing ? 'Resubmit for Review' : 'Submit for Review'}
             </button>
           )}
         </div>
