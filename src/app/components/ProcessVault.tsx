@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FileText, BookOpen, Maximize2, Minimize2 } from 'lucide-react';
+import { FileText, BookOpen, Maximize2, Minimize2, X } from 'lucide-react';
+import { Resource } from '../hooks/useResources';
 
 interface TaxonomyNode {
   name: string;
@@ -61,9 +62,32 @@ const taxonomyData: TaxonomyNode[] = [
   },
 ];
 
-export function ProcessVault() {
+interface ProcessVaultProps {
+  resources: Resource[];
+}
+
+export function ProcessVault({ resources }: ProcessVaultProps) {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [activeModal, setActiveModal] = useState<'serviceMap' | 'playbook' | null>(null);
+
+  const totalResources = resources.length;
+
+  const activeContributors = new Set(
+    resources
+      .filter((r) => r.contributorId || r.contributorName)
+      .map((r) => r.contributorId || r.contributorName)
+  ).size;
+
+  const pendingReview = resources.filter(
+    (r) => r.auditStatus === 'Pending' || r.auditStatus === 'Reviewing' || r.auditStatus === 'Flagged'
+  ).length;
+
+  const lastUpdated = resources.length
+    ? new Date(
+        Math.max(...resources.map((r) => new Date(r.lastVerified).getTime()))
+      ).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : '—';
 
   return (
     <div className="h-full flex flex-col lg:flex-row gap-8 p-4 sm:p-8">
@@ -167,7 +191,10 @@ export function ProcessVault() {
             Comprehensive map of design services, capabilities, and delivery
             workflows across the organization.
           </p>
-          <button className="w-full h-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+          <button
+            onClick={() => setActiveModal('serviceMap')}
+            className="w-full h-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
             View Service Map
           </button>
         </div>
@@ -188,7 +215,10 @@ export function ProcessVault() {
             Internal documentation covering resource submission, approval
             workflows, and quality standards.
           </p>
-          <button className="w-full h-10 rounded-lg border border-border hover:bg-secondary transition-colors">
+          <button
+            onClick={() => setActiveModal('playbook')}
+            className="w-full h-10 rounded-lg border border-border hover:bg-secondary transition-colors"
+          >
             View Playbook
           </button>
         </div>
@@ -200,29 +230,121 @@ export function ProcessVault() {
               <span className="text-[14px] text-muted-foreground">
                 Total Resources
               </span>
-              <span className="text-foreground">247</span>
+              <span className="text-foreground">{totalResources}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[14px] text-muted-foreground">
                 Active Contributors
               </span>
-              <span className="text-foreground">42</span>
+              <span className="text-foreground">{activeContributors}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[14px] text-muted-foreground">
                 Pending Review
               </span>
-              <span className="text-warning-yellow">8</span>
+              <span className="text-warning-yellow">{pendingReview}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[14px] text-muted-foreground">
                 Last Updated
               </span>
-              <span className="text-foreground">Apr 19, 2026</span>
+              <span className="text-foreground">{lastUpdated}</span>
             </div>
           </div>
         </div>
       </div>
+
+      {activeModal === 'serviceMap' && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <h2 className="text-foreground">Service Map</h2>
+              </div>
+              <button
+                onClick={() => setActiveModal(null)}
+                className="w-8 h-8 rounded-lg hover:bg-secondary transition-colors flex items-center justify-center"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <p className="text-[14px] text-foreground">
+                The Service Map documents how design, research, and content
+                disciplines connect to deliver work across the organization.
+                It lays out each service offering, the teams responsible for
+                it, and the handoff points between intake, production, and
+                review — giving anyone outside a discipline a quick way to
+                understand who owns what and where a request should land.
+              </p>
+              <p className="text-[14px] text-foreground">
+                It's maintained alongside the taxonomy above so that as new
+                service lines or sub-disciplines are added, the map stays a
+                reliable source of truth for routing work and finding the
+                right point of contact.
+              </p>
+            </div>
+            <div className="p-6 border-t border-border">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="w-full h-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeModal === 'playbook' && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card border border-border rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-secondary-foreground" />
+                </div>
+                <h2 className="text-foreground">Governance Playbook</h2>
+              </div>
+              <button
+                onClick={() => setActiveModal(null)}
+                className="w-8 h-8 rounded-lg hover:bg-secondary transition-colors flex items-center justify-center"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <p className="text-[14px] text-foreground">
+                The Governance Playbook spells out the rules every resource
+                in the library is expected to follow: how a submission moves
+                from a contributor's first draft through manager review, what
+                makes a resource eligible to be marked Verified, and what
+                triggers a Flagged status when something needs clarification
+                before it can be republished.
+              </p>
+              <p className="text-[14px] text-foreground">
+                It also covers ownership and maintenance expectations once a
+                resource is live — who's responsible for keeping it current,
+                how often it should be re-checked, and the process for
+                deprecating something that's no longer accurate. Treat it as
+                the rulebook behind the audit statuses you see throughout the
+                Library and Approval Queue.
+              </p>
+            </div>
+            <div className="p-6 border-t border-border">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="w-full h-10 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

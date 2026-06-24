@@ -292,7 +292,20 @@ export default function App() {
     setResources((prev) =>
       prev.map((r) =>
         r.id === id
-          ? { ...r, auditStatus: 'Verified' as const, lastVerified: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }
+          ? {
+              ...r,
+              auditStatus: 'Verified' as const,
+              lastVerified: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              auditTrail: [
+                ...(r.auditTrail || []),
+                {
+                  date: new Date().toISOString(),
+                  action: 'Verified',
+                  userId: 'manager-1',
+                  userName: 'Current Manager',
+                },
+              ],
+            }
           : r
       )
     );
@@ -454,7 +467,7 @@ export default function App() {
 
         {currentView === 'vault' && (
           <main className="flex-1 overflow-y-auto">
-            <ProcessVault />
+            <ProcessVault resources={resources} />
           </main>
         )}
 
