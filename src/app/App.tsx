@@ -6,6 +6,7 @@ import { EmptyState } from './components/EmptyState';
 import { ProcessVault } from './components/ProcessVault';
 import { ManagerApprovalQueue } from './components/ManagerApprovalQueue';
 import { SubmissionWizard, SubmissionData } from './components/SubmissionWizard';
+import { ResourceDetail } from './components/resource/ResourceDetail';
 import { useResources, Resource, UserRole } from './hooks/useResources';
 import { Users, CheckCircle, SlidersHorizontal } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
@@ -216,6 +217,7 @@ export default function App() {
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [resources, setResources] = useState<Resource[]>(mockResources);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
   const {
     searchTerm,
@@ -301,7 +303,10 @@ export default function App() {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={(view) => {
+          setSelectedResource(null);
+          setCurrentView(view);
+        }}
         onOpenSubmission={() => setIsSubmissionOpen(true)}
         isManager={userRole === 'Manager'}
       />
@@ -337,7 +342,17 @@ export default function App() {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {currentView === 'library' && (
+        {currentView === 'library' && selectedResource && (
+          <ResourceDetail
+            resource={
+              resources.find((r) => r.id === selectedResource.id) || selectedResource
+            }
+            userRole={userRole}
+            onBack={() => setSelectedResource(null)}
+          />
+        )}
+
+        {currentView === 'library' && !selectedResource && (
           <>
             <Sidebar
               filters={filters}
@@ -388,7 +403,11 @@ export default function App() {
                 </div>
 
                 {filteredResources.length > 0 ? (
-                  <ResourceGrid resources={filteredResources} userRole={userRole} />
+                  <ResourceGrid
+                    resources={filteredResources}
+                    userRole={userRole}
+                    onSelect={setSelectedResource}
+                  />
                 ) : (
                   <EmptyState searchTerm={searchTerm} />
                 )}

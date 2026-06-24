@@ -4,13 +4,14 @@ import { ResourceCard } from './ResourceCard';
 interface ResourceGridProps {
   resources: Resource[];
   userRole: UserRole;
+  onSelect: (resource: Resource) => void;
 }
 
-export function ResourceGrid({ resources, userRole }: ResourceGridProps) {
+export function ResourceGrid({ resources, userRole, onSelect }: ResourceGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {resources.map((resource) => (
-        <ResourceCard key={resource.id} resource={resource} userRole={userRole} />
+        <ResourceCard key={resource.id} resource={resource} userRole={userRole} onSelect={onSelect} />
       ))}
     </div>
   );

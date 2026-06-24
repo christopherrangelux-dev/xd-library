@@ -4,9 +4,20 @@ import { Resource, UserRole } from '../hooks/useResources';
 interface ResourceCardProps {
   resource: Resource;
   userRole: UserRole;
+  onSelect: (resource: Resource) => void;
 }
 
-export function ResourceCard({ resource, userRole }: ResourceCardProps) {
+export function getCategoryColor(type: string) {
+  const colors = {
+    Template: 'bg-blue-100 text-blue-700 border-blue-200',
+    Guide: 'bg-green-100 text-green-700 border-green-200',
+    Tool: 'bg-purple-100 text-purple-700 border-purple-200',
+    Asset: 'bg-orange-100 text-orange-700 border-orange-200',
+  };
+  return colors[type as keyof typeof colors] || 'bg-slate-100 text-slate-700 border-slate-200';
+}
+
+export function ResourceCard({ resource, userRole, onSelect }: ResourceCardProps) {
   const isManager = userRole === 'Manager';
 
   const getAuditBadge = () => {
@@ -37,18 +48,11 @@ export function ResourceCard({ resource, userRole }: ResourceCardProps) {
     }
   };
 
-  const getCategoryColor = (type: string) => {
-    const colors = {
-      Template: 'bg-blue-100 text-blue-700 border-blue-200',
-      Guide: 'bg-green-100 text-green-700 border-green-200',
-      Tool: 'bg-purple-100 text-purple-700 border-purple-200',
-      Asset: 'bg-orange-100 text-orange-700 border-orange-200',
-    };
-    return colors[type as keyof typeof colors] || 'bg-slate-100 text-slate-700 border-slate-200';
-  };
-
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer">
+    <div
+      onClick={() => onSelect(resource)}
+      className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer"
+    >
       <div className="relative aspect-video bg-slate-100 overflow-hidden">
         <img
           src={resource.imageUrl}
@@ -98,12 +102,21 @@ export function ResourceCard({ resource, userRole }: ResourceCardProps) {
         </div>
 
         <div className="flex gap-2">
-          <button className="flex-1 h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(resource);
+            }}
+            className="flex-1 h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+          >
             <ExternalLink className="w-4 h-4" />
             <span>View</span>
           </button>
           {resource.downloadUrl && (
-            <button className="h-9 px-3 rounded-lg border border-border hover:bg-secondary transition-colors flex items-center justify-center">
+            <button
+              onClick={(e) => e.stopPropagation()}
+              className="h-9 px-3 rounded-lg border border-border hover:bg-secondary transition-colors flex items-center justify-center"
+            >
               <Download className="w-4 h-4" />
             </button>
           )}
