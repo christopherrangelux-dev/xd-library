@@ -29,11 +29,16 @@ export interface Resource {
   dateSubmitted?: string;
   auditTrail?: AuditTrailEntry[];
   url?: string;
+  needsReverification?: boolean;
 }
 
 export interface Filters {
   disciplines: Discipline[];
   resourceTypes: ResourceType[];
+}
+
+export function isStale(resource: Resource): boolean {
+  return resource.needsReverification ?? false;
 }
 
 export function useResources(initialResources: Resource[], userRole: UserRole) {

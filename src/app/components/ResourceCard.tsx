@@ -1,5 +1,5 @@
 import { Download, ExternalLink, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { Resource, UserRole } from '../hooks/useResources';
+import { Resource, UserRole, isStale } from '../hooks/useResources';
 
 interface ResourceCardProps {
   resource: Resource;
@@ -32,6 +32,14 @@ export function ResourceCard({ resource, userRole, onSelect }: ResourceCardProps
           </div>
         );
       case 'Verified':
+        if (isStale(resource)) {
+          return (
+            <div className="absolute top-3 right-3 px-2 py-1 rounded bg-warning-bg border border-warning-yellow flex items-center gap-1">
+              <AlertCircle className="w-3 h-3 text-warning-yellow" />
+              <span className="text-[11px] text-slate-800">Needs Re-verification</span>
+            </div>
+          );
+        }
         return (
           <div className="absolute top-3 right-3 px-2 py-1 rounded bg-accent border border-primary flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-primary" />

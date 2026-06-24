@@ -63,6 +63,7 @@ const mockResources: Resource[] = [
     auditStatus: 'Verified',
     imageUrl: 'https://images.unsplash.com/photo-1648134859179-5d6258f776af?w=1080',
     downloadUrl: '#',
+    needsReverification: true,
   },
   {
     id: '5',
@@ -86,6 +87,7 @@ const mockResources: Resource[] = [
     auditStatus: 'Verified',
     imageUrl: 'https://images.unsplash.com/photo-1759661966728-4a02e3c6ed91?w=1080',
     downloadUrl: '#',
+    needsReverification: true,
   },
   {
     id: '7',
@@ -147,6 +149,7 @@ const mockResources: Resource[] = [
     auditStatus: 'Verified',
     imageUrl: 'https://images.unsplash.com/photo-1648134859211-4a1b57575f4e?w=1080',
     downloadUrl: '#',
+    needsReverification: true,
   },
   {
     id: '12',
@@ -182,6 +185,7 @@ const mockResources: Resource[] = [
     lastVerified: 'Apr 7, 2026',
     auditStatus: 'Verified',
     imageUrl: 'https://images.unsplash.com/photo-1634084462412-b54873c0a56d?w=1080',
+    needsReverification: true,
   },
   {
     id: '15',
@@ -350,6 +354,33 @@ export default function App() {
     setIsSubmissionOpen(true);
   };
 
+  const handleReVerify = (id: string) => {
+    setResources((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              lastVerified: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              needsReverification: false,
+              auditTrail: [
+                ...(r.auditTrail || []),
+                {
+                  date: new Date().toISOString(),
+                  action: 'Re-verified',
+                  userId: 'manager-1',
+                  userName: 'Current Manager',
+                },
+              ],
+            }
+          : r
+      )
+    );
+    toast.success('Resource re-verified!', {
+      icon: <CheckCircle className="w-5 h-5" />,
+      duration: 3000,
+    });
+  };
+
   return (
     <div className="size-full flex flex-col bg-background">
       <Toaster position="top-right" richColors />
@@ -404,6 +435,7 @@ export default function App() {
             userRole={userRole}
             onBack={() => setSelectedResource(null)}
             onEditResubmit={handleEditResubmit}
+            onReVerify={handleReVerify}
           />
         )}
 

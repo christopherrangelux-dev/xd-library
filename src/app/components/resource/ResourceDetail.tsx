@@ -10,8 +10,9 @@ import {
   Calendar,
   History,
   Pencil,
+  RefreshCw,
 } from 'lucide-react';
-import { Resource, UserRole, AuditStatus } from '../../hooks/useResources';
+import { Resource, UserRole, AuditStatus, isStale } from '../../hooks/useResources';
 import { getCategoryColor } from '../ResourceCard';
 
 interface ResourceDetailProps {
@@ -19,6 +20,7 @@ interface ResourceDetailProps {
   userRole: UserRole;
   onBack: () => void;
   onEditResubmit: (resource: Resource) => void;
+  onReVerify: (id: string) => void;
 }
 
 const statusBadges: Record<
@@ -71,11 +73,9 @@ function getStatusBadge(status: AuditStatus) {
   );
 }
 
-export function ResourceDetail({ resource, userRole, onBack, onEditResubmit }: ResourceDetailProps) {
-  // userRole is accepted now for a future manager-only action; unused for now.
-  void userRole;
-
+export function ResourceDetail({ resource, userRole, onBack, onEditResubmit, onReVerify }: ResourceDetailProps) {
   const auditTrail = resource.auditTrail || [];
+  const resourceIsStale = resource.auditStatus === 'Verified' && isStale(resource);
 
   return (
     <main className="flex-1 overflow-y-auto">
@@ -112,6 +112,12 @@ export function ResourceDetail({ resource, userRole, onBack, onEditResubmit }: R
                     {resource.discipline}
                   </span>
                   {getStatusBadge(resource.auditStatus)}
+                  {resourceIsStale && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded border text-[11px] bg-warning-bg border-warning-yellow text-slate-800">
+                      <AlertCircle className="w-3 h-3" />
+                      Needs Re-verification
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-foreground mb-1">{resource.title}</h2>
                 <div className="flex items-center gap-1 text-[12px] text-muted-foreground">
@@ -128,6 +134,15 @@ export function ResourceDetail({ resource, userRole, onBack, onEditResubmit }: R
                   >
                     <Pencil className="w-4 h-4" />
                     <span>Edit & Resubmit</span>
+                  </button>
+                )}
+                {userRole === 'Manager' && resourceIsStale && (
+                  <button
+                    onClick={() => onReVerify(resource.id)}
+                    className="h-10 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Re-verify</span>
                   </button>
                 )}
                 {resource.downloadUrl && (
